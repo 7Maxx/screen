@@ -1734,16 +1734,17 @@ static void SelectRendition(Window *win)
 		if ((j == 38 || j == 48) && i + 4 < win->w_NumArgs && win->w_args[i + 1] == 2) {
 			uint8_t r, g, b;
 
-			r = win->w_args[i + 2];
-			g = win->w_args[i + 3];
-			b = win->w_args[i + 4];
+			int have_colorspace = (i + 5 < win->w_NumArgs);
+			r = win->w_args[i + 2 + have_colorspace];
+			g = win->w_args[i + 3 + have_colorspace];
+			b = win->w_args[i + 4 + have_colorspace];
 
 			if (j == 38) {
 				colorfg = 0x04000000 | (r << 16) | (g << 8) | b;
 			} else {
 				colorbg = 0x04000000 | (r << 16) | (g << 8) | b;
 			}
-			i += 4;
+			i += 4 + have_colorspace;
 			continue;
 		}
 		if (j >= 90 && j <= 97)
