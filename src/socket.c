@@ -49,7 +49,9 @@
 #if ENABLE_PAM
 #include <security/pam_appl.h>
 #else
+#ifndef __CYGWIN__
 #include <shadow.h>
+#endif
 #endif
 
 #include "screen.h"
@@ -357,6 +359,9 @@ int MakeServerSocket(void)
 	a.sun_path[ARRAY_SIZE(a.sun_path) - 1] = 0;
 	xseteuid(real_uid);
 	xsetegid(real_gid);
+#ifdef __CYGWIN__
+        setsockopt(s, SOL_SOCKET, SO_PEERCRED, NULL, 0);
+#endif
 	if (connect(s, (struct sockaddr *)&a, strlen(SocketPath) + 2) != -1) {
 		if (quietflag) {
 			Kill(D_userpid, SIG_BYE);
@@ -386,6 +391,9 @@ int MakeServerSocket(void)
 	chmod(SocketPath, SOCKMODE);
 	if (chown(SocketPath, real_uid, real_gid))
 		Panic(errno, "chown");
+#ifdef __CYGWIN__
+        setsockopt(s, SOL_SOCKET, SO_PEERCRED, NULL, 0);
+#endif
 	if (listen(s, 5) == -1)
 		Panic(errno, "listen");
 #ifdef F_SETOWN
@@ -408,6 +416,9 @@ int MakeClientSocket(int err)
 	a.sun_path[ARRAY_SIZE(a.sun_path) - 1] = 0;
 	xseteuid(real_uid);
 	xsetegid(real_gid);
+#ifdef __CYGWIN__
+        setsockopt(s, SOL_SOCKET, SO_PEERCRED, NULL, 0);
+#endif
 	if (connect(s, (struct sockaddr *)&a, strlen(SocketPath) + 2) == -1) {
 		if (err)
 			Msg(errno, "%s: connect", SocketPath);
@@ -831,7 +842,11 @@ void ReceiveMsg(void)
 	case MSG_ATTACH:
 		if (CreateTempDisplay(&m, recvfd, win))
 			break;
+#ifndef __CYGWIN__
 		AskPassword(&m);
+#else
+		FinishAttach(&m);
+#endif
 		break;
 	case MSG_ERROR:
 		{
@@ -850,7 +865,11 @@ void ReceiveMsg(void)
 	case MSG_POW_DETACH:
 		if (CreateTempDisplay(&m, recvfd, NULL))
 			break;
+#ifndef __CYGWIN__
 		AskPassword(&m);
+#else
+		FinishDetach(&m);
+#endif
 		break;
 	case MSG_QUERY:
 		{
@@ -1191,28 +1210,29 @@ static bool CheckPassword(const char *password) {
 #else /* ENABLE_PAM */
 
 static bool CheckPassword(const char *password) {
-	bool ret = false;
-	char *passwd = 0;
-	struct spwd *p;
-	gid_t gid = getegid();
-	uid_t uid = geteuid();
+  bool ret = false;
+#ifndef __CYGWIN__
+  char *passwd = 0;
+  struct spwd *p = NULL;
+  gid_t gid = getegid();
+  uid_t uid = geteuid();
 
-	if (seteuid(0) || setegid(0))
-		Panic(0, "\r\ncan't get root uid/gid\r\n");
-	p = getspnam(ppp->pw_name);
-	if (seteuid(uid) || setegid(gid))
-		Panic(0, "\r\ncan't restore uid/gid\r\n");
+  if (seteuid(0) || setegid(0))
+    Panic(0, "\r\ncan't get root uid/gid\r\n");
+  p = getspnam(ppp->pw_name);
+  if (seteuid(uid) || setegid(gid))
+    Panic(0, "\r\ncan't restore uid/gid\r\n");
 
-	if (p == NULL) {
-		AddStr("\r\ncan't open passwd file\r\n");
-		return false;
-	}
+  if (p == NULL) {
+    AddStr("\r\ncan't open passwd file\r\n");
+    return false;
+  }
 
-	passwd = crypt(password, p->sp_pwdp);
+  passwd = crypt(password, p->sp_pwdp);
+  ret = (strcmp(passwd, p->sp_pwdp) == 0);
+#endif
 
-	ret = (strcmp(passwd, p->sp_pwdp) == 0);
-
-	return ret;
+  return ret;
 }
 #endif /* ENABLE_PAM */
 

@@ -867,14 +867,14 @@ int TtyGrabConsole(int fd, bool on, char *rc_name)
 	InitTTY(&new1, 0);
 	SetMode(&new1, &new2, 0, 0);
 	SetTTY(consredirfd[1], &new2);
-	if (UserContext() == 1)
-		UserReturn(ioctl(consredirfd[1], TIOCCONS, (char *)&on));
-	if (UserStatus()) {
-		Msg(errno, "%s: ioctl TIOCCONS failed", rc_name);
-		close(consredirfd[0]);
-		close(consredirfd[1]);
-		return -1;
-	}
+	//if (UserContext() == 1)
+	//	UserReturn(ioctl(consredirfd[1], TIOCCONS, (char *)&on));
+	//if (UserStatus()) {
+	//	Msg(errno, "%s: ioctl TIOCCONS failed", rc_name);
+	//	close(consredirfd[0]);
+	//	close(consredirfd[1]);
+	//	return -1;
+	//	}
 #endif
 	consredir_ev.fd = consredirfd[0];
 	consredir_ev.type = EV_READ;
