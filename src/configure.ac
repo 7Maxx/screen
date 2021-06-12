@@ -20,6 +20,7 @@ AH_TEMPLATE([HAVE_OPENPTY], [system has openpty() defined])
 
 dnl -
 AH_TEMPLATE([ENABLE_UTMP], [Enable utmp support])
+AH_TEMPLATE([ENABLE_PASSWORD], [Enable password check])
 AH_TEMPLATE([HAVE_UTEMPTER], [system has utempter helper binary])
 AH_TEMPLATE([HAVE_UT_EXIT], [utmpx struct has ut_exit field])
 AH_TEMPLATE([HAVE_UT_HOST], [utmpx struct has ut_host field])
@@ -103,6 +104,10 @@ AC_ARG_ENABLE(utmp, AS_HELP_STRING([--enable-utmp],
 	      [enable utmp support (default: disabled)]),
 	      [enable_utmp=$enableval],
 	      [enable_utmp=no])
+AC_ARG_ENABLE(password, AS_HELP_STRING([--enable-password],
+	      [enable password checking (default: enabled)]),
+	      [enable_password=$enableval],
+	      [enable_password=yes])
 AC_ARG_ENABLE(telnet, AS_HELP_STRING([--enable-telnet],
 	      [enable telnet support (default: disabled)]),
 	      [enable_telnet=$enableval],
@@ -182,6 +187,10 @@ AS_IF([test "x$enable_telnet" = "xyes"], [
 	AC_DEFINE(ENABLE_TELNET)
 ])
 
+AS_IF([test "x$enable_password" = "xyes"], [
+	AC_DEFINE(ENABLE_PASSWORD)
+])
+
 dnl -- enable_socket_dir
 
 AS_IF([test "x$enable_socket_dir" != "xno"], [
@@ -221,6 +230,7 @@ echo ""
 echo " PAM support: .............................. $enable_pam"
 echo " telnet support: ........................... $enable_telnet"
 echo " utmp support: ............................. $enable_utmp"
+echo " password check: ........................... $enable_password"
 echo " global socket directory: .................. $enable_socket_dir"
 echo ""
 echo " system screenrc location: ................. $with_system_screenrc"

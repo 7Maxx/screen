@@ -842,7 +842,7 @@ void ReceiveMsg(void)
 	case MSG_ATTACH:
 		if (CreateTempDisplay(&m, recvfd, win))
 			break;
-#ifndef __CYGWIN__
+#if ENABLE_PASSWORD && !defined(__CYGWIN__)
 		AskPassword(&m);
 #else
 		FinishAttach(&m);
@@ -865,7 +865,7 @@ void ReceiveMsg(void)
 	case MSG_POW_DETACH:
 		if (CreateTempDisplay(&m, recvfd, NULL))
 			break;
-#ifndef __CYGWIN__
+#if ENABLE_PASSWORD && !defined(__CYGWIN__)
 		AskPassword(&m);
 #else
 		FinishDetach(&m);
