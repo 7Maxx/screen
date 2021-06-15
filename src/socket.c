@@ -28,6 +28,8 @@
 
 #include "config.h"
 
+#define SOCKDIR_IS_LOCAL_TO_HOST
+
 #include "socket.h"
 
 #include <pwd.h>
