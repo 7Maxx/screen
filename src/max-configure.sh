@@ -1,1 +1,1 @@
-./configure --disable-pam --disable-utmp --enable-socket-dir=/var/run/screen
+./configure --enable-pam --disable-utmp --disable-password --enable-socket-dir=/var/run/screen
